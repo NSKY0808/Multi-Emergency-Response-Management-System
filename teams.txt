@@ -1,0 +1,4 @@
+TeamAlpha|6|0|0|0
+TeamBeta|2|0|0|0
+TeamDelta|9|1|0|0
+TeamGamma|4|0|0|0
