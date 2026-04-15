@@ -1,3 +1,5 @@
-1|Baner|Fire|6|1771941536|TeamAlpha|1|0|Legacy Citizen||-1|0
-2|Kothrud|Accident|7|1772106992|TeamBeta|1|0|Legacy Citizen||-1|0
+1|Baner|Fire|7|1771941536|TeamAlpha|1|0|Legacy Citizen||-1|0
+2|Kothrud|Accident|7|1772106992|TeamBeta|2|0|Legacy Citizen||-1|1776242625
 3|Baner|Fire|5|1774179042|TeamGamma|1|0|Control Room||27|0
+4|Shivajinagar|Power Outage|4|1776242562|TeamDelta|1|3|Control Room||16|0
+5|Hadapsar|Medical|6|1776242658|TeamBeta|1|5|Reporting Desk||14|0

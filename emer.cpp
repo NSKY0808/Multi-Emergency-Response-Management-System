@@ -618,7 +618,7 @@ public:
         oss << "Pending " << pending_count()
             << " | Assigned " << assigned_count()
             << " | Handled " << handled_count()
-            << " | Max Severity " << severity_tree_.max_value();
+            << " | Max Active Severity " << max_active_severity();
         return oss.str();
     }
 
@@ -967,6 +967,16 @@ private:
         return std::count_if(emergencies_.begin(), emergencies_.end(), [](const Emergency& e) {
             return e.status == EmergencyStatus::Handled;
         });
+    }
+
+    int max_active_severity() const {
+        int result = 0;
+        for (const Emergency& e : emergencies_) {
+            if (e.status != EmergencyStatus::Handled) {
+                result = std::max(result, e.severity);
+            }
+        }
+        return result;
     }
 
     int available_team_count() const {
@@ -1536,7 +1546,7 @@ void draw_map(HDC dc, const RECT& rect) {
 }
 
 void create_control_page(HWND parent) {
-    g_page_control = CreateWindowExW(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE,
+    g_page_control = CreateWindowExW(0, L"EmergencyPageHost", L"", WS_CHILD | WS_VISIBLE,
         0, 96, 1404, 680, parent, nullptr, nullptr, nullptr);
 
     CreateWindowW(L"STATIC", L"Control Room", WS_CHILD | WS_VISIBLE,
@@ -1628,7 +1638,7 @@ void create_control_page(HWND parent) {
 }
 
 void create_reporting_page(HWND parent) {
-    g_page_reporting = CreateWindowExW(0, L"STATIC", L"", WS_CHILD,
+    g_page_reporting = CreateWindowExW(0, L"EmergencyPageHost", L"", WS_CHILD,
         0, 96, 1404, 680, parent, nullptr, nullptr, nullptr);
 
     g_label_report_title = CreateWindowW(L"STATIC", L"Reporting & Situation Review", WS_CHILD | WS_VISIBLE,
@@ -1872,6 +1882,22 @@ LRESULT CALLBACK MapProc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_param
     return DefWindowProcW(hwnd, message, w_param, l_param);
 }
 
+LRESULT CALLBACK PageProc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_param) {
+    HWND parent = GetParent(hwnd);
+    switch (message) {
+        case WM_COMMAND:
+        case WM_NOTIFY:
+        case WM_CTLCOLORSTATIC:
+        case WM_CTLCOLOREDIT:
+        case WM_CTLCOLORLISTBOX:
+            if (parent) {
+                return SendMessageW(parent, message, w_param, l_param);
+            }
+            break;
+    }
+    return DefWindowProcW(hwnd, message, w_param, l_param);
+}
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_param) {
     switch (message) {
         case WM_CREATE: {
@@ -2006,6 +2032,14 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int show_command) {
     map_wc.hCursor = LoadCursor(nullptr, IDC_CROSS);
     map_wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     RegisterClassW(&map_wc);
+
+    WNDCLASSW page_wc {};
+    page_wc.lpfnWndProc = PageProc;
+    page_wc.hInstance = instance;
+    page_wc.lpszClassName = L"EmergencyPageHost";
+    page_wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    page_wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
+    RegisterClassW(&page_wc);
 
     WNDCLASSW wc {};
     wc.lpfnWndProc = WindowProc;
